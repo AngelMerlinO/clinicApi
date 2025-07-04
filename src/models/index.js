@@ -28,29 +28,39 @@ const SalesOrderProjections  = defineSalesOrderProjections(sequelize);
 const Logs                   = defineLogs(sequelize);
 const RefreshTokens          = defineRefreshTokens(sequelize);
 
-// Associations
+// Model associations
 Roles.hasMany(Users);
 Users.belongsTo(Roles);
 
-Roles.belongsToMany(Permissions, { through: RolePermissions });
-Permissions.belongsToMany(Roles, { through: RolePermissions });
+// Pivot associations for permissions
+RolePermissions.belongsTo(Permissions, { foreignKey: 'permission_id', as: 'permission' });
+Permissions.hasMany(RolePermissions, { foreignKey: 'permission_id', as: 'rolePermissions' });
 
-Users.belongsToMany(Permissions, { through: UserPermissions });
-Permissions.belongsToMany(Users, { through: UserPermissions });
+UserPermissions.belongsTo(Permissions, { foreignKey: 'permission_id', as: 'permission' });
+Permissions.hasMany(UserPermissions, { foreignKey: 'permission_id', as: 'userPermissions' });
 
+// Many-to-many through pivot tables
+Roles.belongsToMany(Permissions, { through: RolePermissions, foreignKey: 'role_id', otherKey: 'permission_id' });
+Permissions.belongsToMany(Roles, { through: RolePermissions, foreignKey: 'permission_id', otherKey: 'role_id' });
+
+Users.belongsToMany(Permissions, { through: UserPermissions, foreignKey: 'user_id', otherKey: 'permission_id' });
+Permissions.belongsToMany(Users, { through: UserPermissions, foreignKey: 'permission_id', otherKey: 'user_id' });
+
+// Sales Orders associations
 Users.hasMany(SalesOrders);
 SalesOrders.belongsTo(Users);
 
 CostCenters.hasMany(SalesOrders);
 SalesOrders.belongsTo(CostCenters);
 
-SalesOrders.belongsToMany(Projections, { through: SalesOrderProjections });
-Projections.belongsToMany(SalesOrders, { through: SalesOrderProjections });
+SalesOrders.belongsToMany(Projections, { through: SalesOrderProjections, foreignKey: 'sales_order_id', otherKey: 'projection_id' });
+Projections.belongsToMany(SalesOrders, { through: SalesOrderProjections, foreignKey: 'projection_id', otherKey: 'sales_order_id' });
 
+// Logs associations
 Users.hasMany(Logs);
 Logs.belongsTo(Users);
 
-// RefreshTokens association
+// Refresh token associations
 Users.hasMany(RefreshTokens, { foreignKey: 'user_id' });
 RefreshTokens.belongsTo(Users, { foreignKey: 'user_id' });
 
