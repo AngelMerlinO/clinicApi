@@ -1,4 +1,4 @@
-// api/src/app.js
+// api/src/app.js test de nueva maquina 
 import express from 'express';
 import cors from 'cors';
 import routes from './routes/index.js';
